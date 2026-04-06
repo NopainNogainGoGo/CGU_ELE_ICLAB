@@ -41,6 +41,24 @@ module ALU ( ALU_OUT,      // alu output
   input CLK, RESET_;
   
   // You need to add your design here.
+
+  // Decoder 
+  reg [6:0]decode; 
+
+  always @(*) begin
+      decode = 7'b000_0000; // Default: all off
+      case(INSTRUCTION)
+          4'b0000: decode[0] = 1'b1; // ADD
+          4'b0001: decode[1] = 1'b1; // SUB
+          4'b0010: decode[2] = 1'b1; // NOT
+          4'b0011: decode[3] = 1'b1; // AND
+          4'b0100: decode[4] = 1'b1; // OR
+          4'b0101: decode[5] = 1'b1; // XOR
+          default: decode[6] = 1'b1; // Others 
+      endcase
+  end
+
+
   reg [7:0] X;                    
   reg [7:0] adder_op_b;   
   wire [7:0] NOT_B = ~INPUT_B;
@@ -50,25 +68,25 @@ module ALU ( ALU_OUT,      // alu output
   always @(*) begin
     X = 8'd0;
     adder_op_b = INPUT_B; 
-      case(INSTRUCTION)
-        4'b0000: // A + B
+      case(decode)
+        7'b0_000_001: // A + B
           X = sum_result;
 
-        4'b0001: begin // A + (~B + 1)
+        7'b0_000_010: begin // A + (~B + 1)
           adder_op_b = NOT_B;
           X = inc_result;
         end
 
-        4'b0010:  // NOT: ~B
+        7'b0_000_100:  // NOT: ~B
           X = NOT_B;
         
-        4'b0011: // AND: A & B
+        7'b0_001_000: // AND: A & B
             X = INPUT_A & INPUT_B;
         
-        4'b0100: // OR: A | B
+        7'b0_010_000: // OR: A | B
             X = INPUT_A | INPUT_B;
         
-        4'b0101: // XOR: A ^ B
+        7'b0_100_000: // XOR: A ^ B
             X = INPUT_A ^ INPUT_B;
         
         default: // Others: No operation
